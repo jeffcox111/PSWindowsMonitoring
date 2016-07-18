@@ -152,7 +152,7 @@ function Check-WebsiteOnline([string]$url, [string]$friendlyName)
     }
 }
 
-function Check-DBEmailFailures([string] $server = "Mudflap")
+function Check-DBEmailFailures([string] $server)
 {
     write-host "Checking for failed emails on $server..."
     $sqlConn = New-Object System.Data.SqlClient.SqlConnection
