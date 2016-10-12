@@ -1,4 +1,4 @@
-﻿function get-logonhistory{
+﻿function Get-LogonHistory{
     Param (
      [string]$Computer = 'localhost', #(Read-Host Remote computer name),
      [int]$Days = 10
