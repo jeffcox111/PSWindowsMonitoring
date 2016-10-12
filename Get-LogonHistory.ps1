@@ -36,4 +36,3 @@
     }
 }
 
-get-logonhistory 
