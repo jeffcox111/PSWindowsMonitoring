@@ -1,4 +1,4 @@
-﻿function Get-LogonHistory{
+function Get-LogonHistory{
     Param (
      [string]$Computer = 'localhost', #(Read-Host Remote computer name),
      [int]$Days = 10
@@ -35,4 +35,8 @@
         $Result | Select User, Time | Sort Time #| Out-GridView
     }
 }
+
+function Get-UpTime(){
+    Get-WmiObject win32_operatingsystem | select csname, @{LABEL='LastBootUpTime';EXPRESSION={$_.ConverttoDateTime($_.lastbootuptime)}}
+}   
 
