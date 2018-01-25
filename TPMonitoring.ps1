@@ -1,5 +1,5 @@
 ﻿#schedule this script to run every 5 minutes to work with SQL procs and tables
-. .\Monitoring-Checks.ps1
+. .\WindowsHelpers.ps1
 
 function Send-SummaryEmail ([Collections.Generic.List[LogEntry]]$errorMessageCollection)
 {
