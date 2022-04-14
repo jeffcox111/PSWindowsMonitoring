@@ -8,18 +8,6 @@ public class LogEntry{
 }
 "@;
 
-Add-Type -Language CSharp @"
-public class Issue{
-    public string Server;
-    public string MonitoringType;
-    public string ErrorMessage;
-    public System.DateTime StartTime;
-    public System.DateTime EndTime;
-    public bool SendStartEmail;
-    public book SendEndEmail;
-}
-"@;
-
 $messages = New-Object Collections.Generic.List[LogEntry]
 
 $m1 = New-Object LogEntry
