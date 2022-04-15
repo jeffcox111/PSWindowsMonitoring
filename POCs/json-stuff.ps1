@@ -46,9 +46,9 @@ $messages.Add($m3)
 $messages.add($m4)
 $messages.Add($m5)
 
-$jsonData = $messages | ConvertTo-Json
+$jsonData = $messages | ConvertTo-Json | Out-File "mydata.json"
 
 $reloadedMessages = New-Object Collections.Generic.List[LogEntry]
 
-$reloadedMessages = ConvertFrom-Json $jsonData
+$reloadedMessages = Get-Content 'mydata.json' | Out-String | ConvertFrom-Json
 $reloadedMessages

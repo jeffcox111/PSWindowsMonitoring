@@ -7,16 +7,13 @@
 . .\SupportFunctions.ps1
 
 
-
-
-
-
-
-
 function Run-MonitoringChecks ($LogToDB = 0, $SendEmail = 0)
 {
     $messages = New-Object Collections.Generic.List[LogEntry]
 
+    #TODO: replicate old SQL logic for Adding new Issues and Resolving existing issues
+    
+    
     #Run monitoring checks...
     Check-ServerIsOnline google.com | % { Append-ErrorList $_ $messages }
     #TODO: ADD ALL THE FUNCTION CALLS YOU WANT TO RUN HEAR
@@ -24,6 +21,7 @@ function Run-MonitoringChecks ($LogToDB = 0, $SendEmail = 0)
     #FOR EXAMPLE:
     #Check-SOMETHING [thing to check [and parameters]] | % { Append-ErrorList $_ $messages }
 
+    #TODO: modify this process to log to json
     #log to DB
     if($LogToDB -gt 0)
     {
