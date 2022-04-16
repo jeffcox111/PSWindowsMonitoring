@@ -16,7 +16,7 @@ public class Issue{
     public System.DateTime StartTime;
     public System.DateTime EndTime;
     public bool SendStartEmail;
-    public book SendEndEmail;
+    public bool SendEndEmail;
 }
 "@;
 
