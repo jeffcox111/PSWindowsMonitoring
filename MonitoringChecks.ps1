@@ -46,7 +46,7 @@ function Check-SQLBlocking([string]$serverName)
     }    
 }
 
-function Check-ServerIsOnline([string]$serverName, [string]$friendlyHostName = "")
+function Check-ServerIsOnline([string]$serverName, [string]$friendlyHostName = "", [int32]$NumberOfAttempts = 1)
 {
     if($friendlyHostName -eq "")
     {
@@ -58,7 +58,7 @@ function Check-ServerIsOnline([string]$serverName, [string]$friendlyHostName = "
     }
 
     write-host "Testing connectivity with $friendlyHostName..."
-    if (-Not (Test-Connection $serverName -Count 2 -ErrorAction SilentlyContinue))
+    if (-Not (Test-Connection $serverName -Count $NumberOfAttempts -ErrorAction SilentlyContinue))
     {
         $logentry = new-object LogEntry
         $logentry.Server = $friendlyHostName
