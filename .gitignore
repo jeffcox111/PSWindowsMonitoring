@@ -1,3 +1,6 @@
 #ignore testing json data
 mydata.json
 LogEntries.json
+
+#ignore settings file 
+settings.json
