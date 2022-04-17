@@ -13,7 +13,7 @@ function Run-MonitoringChecks ($SendEmail = 0)
     #Run monitoring checks...
     Check-ServerIsOnline google.com | % { Append-ErrorList $_ $messages }
     Check-ServerIsOnline downdetector.com | % { Append-ErrorList $_ $messages }
-    Check-Freespace localhost C: 400 | % { Append-ErrorList $_ $messages }
+    Check-Freespace localhost C: 50 | % { Append-ErrorList $_ $messages }
     #TODO: ADD ALL THE FUNCTION CALLS YOU WANT TO RUN HEAR
     #THE FORMAT SHOULD ALWAYS BE LIKE THE LINE ABOVE.
     #FOR EXAMPLE:
@@ -41,5 +41,15 @@ function Run-MonitoringChecks ($SendEmail = 0)
 
 } 
 
-Run-MonitoringChecks -SendEmail 0
+while($true)
+{
+    Run-MonitoringChecks -SendEmail 0
 
+    for($x = 0; $x -le 300; $x++)
+    {
+        $percentComplete = ($x / 300) * 100
+        Write-Progress -Activity "Time till next monitoring check run..." -Status "$percentComplete%" -PercentComplete $percentComplete
+        Start-Sleep -Seconds 1
+    }
+
+}
