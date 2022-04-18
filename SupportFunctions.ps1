@@ -175,17 +175,33 @@ function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLog
 
     foreach($nle in $newLogEntries)
     {
-        $issue = New-Object Issue
-        $issue.Server = $nle.Server
-        $issue.MonitoringType = $nle.MonitoringType
-        $issue.ErrorMessage = $nle.ErrorMessage
-        $issue.StartTime = [DateTime]::Now
-        $issue.EndTime = $null
-        $issue.SendStartEmail = $true
-        $issue.SendEndEmail = $true
+        if($nle.IsHeartbeat -eq $false)
+        {
+            $issue = New-Object Issue
+            $issue.Server = $nle.Server
+            $issue.MonitoringType = $nle.MonitorType
+            $issue.ErrorMessage = $nle.ErrorMessage
+            $issue.StartTime = [DateTime]::Now
+            $issue.EndTime = $null
+            $issue.SendStartEmail = $true
+            $issue.SendEndEmail = $true
 
-        $newIssues.Add($Issue)
+            $newIssues.Add($Issue)
+        }
     }
 
-    $newIssues | ConvertTo-Json | Out-File "Issues.json" -Append
+    if($null -eq $existingIssues)
+    {
+        $newIssues | ConvertTo-Json | Out-File "Issues.json" 
+    }
+    else
+    {        
+        $resultIssues = New-Object Collections.Generic.List[Issue]
+
+        $existingIssues | % { $resultIssues.Add( $_ )}
+        $newIssues | % { $resultIssues.add($_)}
+
+        $resultMessages | ConvertTo-Json | Out-File "Issues.json"
+    }
+    
 }

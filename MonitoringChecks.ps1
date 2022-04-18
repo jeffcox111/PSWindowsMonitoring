@@ -1,6 +1,6 @@
 Add-Type -Language CSharp @"
 public class LogEntry{
-    public System.DateTime TimeStamp;
+    public System.DateTime? TimeStamp;
     public string Server;
     public string MonitorType;
     public string ErrorMessage;
