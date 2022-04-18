@@ -147,7 +147,7 @@ function Load-Issues()
     return $existingIssues
 }
 
-function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
+function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
     $newLogEntriesInterator = New-Object Collections.Generic.List[LogEntry]
     $newLogEntriesInterator = $newLogEntries.PSObject.Copy()
@@ -207,5 +207,40 @@ function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLog
 
         $resultIssues | ConvertTo-Json | Out-File "Issues.json"
     }
+}
+
+function Resolve-FixedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
+{
+    $existingIssues = New-Object Collections.Generic.List[Issue]    
+    $existingIssues = Load-Issues
+    
+    $count = 0
+    foreach($ei in $existingIssues)
+    {
+        if($null -eq $ei.EndTime)
+        {
+            $resolutionExists = $true
+            foreach($nle in $newLogEntries)
+            {
+                if($nle.Server -eq $ei.Server -and $nle.MonitorType -eq $ei.MonitoringType)
+                {
+                    $resolutionExists = $false
+                }
+            }
+
+            if($resolutionExists)
+            {
+                $existingIssues[$count].EndTime = [DateTime]::Now
+            }
+        }
+        $count++
+    }
+    
+    $existingIssues | ConvertTo-Json | Out-File "Issues.json"
+}
+function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
+{
+    Add-NewIssues $newLogEntries
+    Resolve-FixedIssues $newLogEntries
     
 }

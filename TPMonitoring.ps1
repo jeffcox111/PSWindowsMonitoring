@@ -65,5 +65,4 @@ while($true)
         Write-Progress -Activity "Time till next monitoring check run..." -Status "$percentComplete%" -PercentComplete $percentComplete
         Start-Sleep -Seconds 1
     }
-
 }
