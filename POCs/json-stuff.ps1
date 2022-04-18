@@ -27,6 +27,7 @@ $m3.Server = "192.168.1.1"
 $m3.TimeStamp = [DateTime]::Now
 $m3.MonitorType = "Check-ServerOnline"
 $m3.ErrorMessage = "This server is offline"
+$m3.IsHeartbeat = $true
 
 $m4 = New-Object LogEntry
 $m4.Server = "192.168.1.1"
@@ -51,4 +52,6 @@ $jsonData = $messages | ConvertTo-Json | Out-File "mydata.json"
 $reloadedMessages = New-Object Collections.Generic.List[LogEntry]
 
 $reloadedMessages = Get-Content 'mydata.json' | Out-String | ConvertFrom-Json
-$reloadedMessages
+#$reloadedMessages
+
+$reloadedMessages | ? {$_.IsHeartbeat -eq $true} | % {$_}

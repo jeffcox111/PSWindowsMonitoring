@@ -103,9 +103,98 @@ function Get-LogonHistory{
     }
 }
 
+function Load-LogEntries()
+{
+    $existingEntriesJson = Get-Content 'LogEntries.json' | Out-String | ConvertFrom-Json
 
+    $existingLogEntries = New-Object Collections.Generic.List[LogEntry]
+
+    foreach($ele in $existingEntriesJson)
+    {
+        $tmpLogEntry = New-Object LogEntry
+        $tmpLogEntry.Server = $ele.Server
+        $tmpLogEntry.ErrorMessage = $ele.ErrorMessage
+        $tmpLogEntry.MonitorType = $ele.MonitoringType
+        $tmpLogEntry.IsHeartbeat = $ele.IsHeartbeat
+        $tmpLogEntry.TimeStamp = $ele.TimeStamp
+
+        $existingLogEntries.Add($tmpLogEntry)
+    }
+
+    return $existingLogEntries
+}
+
+function Load-Issues()
+{
+    $existingIssuesJson = Get-Content 'Issues.json' | Out-String | ConvertFrom-Json
+
+    $existingIssues = New-Object Collections.Generic.List[Issue]
+
+    foreach($ele in $existingEntriesJson)
+    {
+        $tmpIssue = New-Object Issue
+        $tmpIssue.Server = $ele.Server
+        $tmpIssue.ErrorMessage = $ele.ErrorMessage
+        $tmpIssue.MonitorType = $ele.MonitoringType
+        $tmpIssue.StartTime = $ele.StartTime
+        $tmpIssue.EndTime = $ele.EndTime
+        $tmpIssue.SendEndEmail = $ele.SendEndEmail
+        $tmpIssue.SendStartEmail = $ele.SendStartEmail
+        
+        $existingIssues.Add($tmpIssue)
+    }
+
+    return $existingIssues
+
+
+}
 function UpdateNewAndResolvedIssues()
 {
 
+    $newLogEntries = New-Object Collections.Generic.List[LogEntry]
+    $newLogEntriesInterator = New-Object Collections.Generic.List[LogEntry]
+    $newLogEntriesInterator = $newLogEntries
     
+    $existingLogEntries = Load-LogEntries
+    if($existingLogEntries.Count -gt 0)
+    {
+        $existingLogEntries | ? {$_.IsHeartbeat = $false -and ($_.TimeStamp -gt (Get-Date).AddMinutes(-5)) } | % { $newLogEntries.add($_) }
+    }
+    
+    $existingIssues = New-Object Collections.Generic.List[Issue]    
+    $existingIssues = Load-Issues
+    
+    $openIssues = New-Object Collections.Generic.List[Issue]  
+    $openIssues = $existingIssues | ? { $null -ne $_.EndTime }
+
+    $newIssues = New-Object Collections.Generic.List[Issue]  
+
+    $count = 0
+    foreach($nle in $newLogEntriesInterator)
+    {
+        $count++
+        foreach($oi in $openIssues)
+        {
+            if($nle.Server -eq $oi.Server -and $nle.MonitoringType -eq $oi.MonitoringType -and $null -eq $oi.EndTime)
+            {
+                $newLogEntries.RemoveAt($count)
+            }
+        }
+    }
+
+    foreach($nle in $newLogEntries)
+    {
+        $issue = New-Object Issue
+        $issue.Server = $nle.Server
+        $issue.MonitoringType = $nle.MonitoringType
+        $issue.ErrorMessage = $nle.ErrorMessage
+        $issue.StartTime = $nle.StartTime
+        $issue.EndTime = $null
+        $issue.SendStartEmail = $nle.SendStartEmail
+        $issue.SendEndEmail = $nle.SendEndEmail
+
+        $newIssues.Add($Issue)
+    }
+
+    $newIssues | ConvertTo-Json | Out-File "Issues.json" -Append
 }

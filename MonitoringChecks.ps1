@@ -14,7 +14,7 @@ public class Issue{
     public string MonitoringType;
     public string ErrorMessage;
     public System.DateTime StartTime;
-    public System.DateTime EndTime;
+    public System.DateTime? EndTime;
     public bool SendStartEmail;
     public bool SendEndEmail;
 }
