@@ -149,43 +149,48 @@ function Load-Issues()
 
 function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
-    $newLogEntriesInterator = $newLogEntries
+    $newLogEntriesInterator = New-Object Collections.Generic.List[LogEntry]
+    $newLogEntriesInterator = $newLogEntries.PSObject.Copy()
     
     $existingIssues = New-Object Collections.Generic.List[Issue]    
     $existingIssues = Load-Issues
     
     $openIssues = New-Object Collections.Generic.List[Issue]  
-    $openIssues = $existingIssues | ? { $null -ne $_.EndTime }
+    $openIssues = $existingIssues | ? { $null -eq $_.EndTime }
 
     $newIssues = New-Object Collections.Generic.List[Issue]  
 
     $count = 0
     foreach($nle in $newLogEntriesInterator)
     {
-        $count++
         foreach($oi in $openIssues)
         {
-            if($nle.Server -eq $oi.Server -and $nle.MonitoringType -eq $oi.MonitoringType -and $null -eq $oi.EndTime)
+            if($nle.Server -eq $oi.Server -and $nle.MonitorType -eq $oi.MonitoringType -and $null -eq $oi.EndTime)
             {
-                $newLogEntries.RemoveAt($count)
+                #this means we can ignore this log entry, so setting IsHeartbeat to True will ignore it in subsequent logic
+                $newLogEntries[$count].IsHeartbeat = $true
             }
         }
+        $count++
     }
 
-    foreach($nle in $newLogEntries)
+    if($newLogEntries -ne $null -and $newLogEntries.Count -gt 0)
     {
-        if($nle.IsHeartbeat -eq $false)
+        foreach($nle in $newLogEntries)
         {
-            $issue = New-Object Issue
-            $issue.Server = $nle.Server
-            $issue.MonitoringType = $nle.MonitorType
-            $issue.ErrorMessage = $nle.ErrorMessage
-            $issue.StartTime = [DateTime]::Now
-            $issue.EndTime = $null
-            $issue.SendStartEmail = $true
-            $issue.SendEndEmail = $true
+            if($nle.IsHeartbeat -eq $false)
+            {
+                $issue = New-Object Issue
+                $issue.Server = $nle.Server
+                $issue.MonitoringType = $nle.MonitorType
+                $issue.ErrorMessage = $nle.ErrorMessage
+                $issue.StartTime = [DateTime]::Now
+                $issue.EndTime = $null
+                $issue.SendStartEmail = $true
+                $issue.SendEndEmail = $true
 
-            $newIssues.Add($issue)
+                $newIssues.Add($issue)
+            }
         }
     }
 
