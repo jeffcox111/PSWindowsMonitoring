@@ -130,12 +130,12 @@ function Load-Issues()
 
     $existingIssues = New-Object Collections.Generic.List[Issue]
 
-    foreach($ele in $existingEntriesJson)
+    foreach($ele in $existingIssuesJson)
     {
         $tmpIssue = New-Object Issue
         $tmpIssue.Server = $ele.Server
         $tmpIssue.ErrorMessage = $ele.ErrorMessage
-        $tmpIssue.MonitorType = $ele.MonitoringType
+        $tmpIssue.MonitoringType = $ele.MonitoringType
         $tmpIssue.StartTime = $ele.StartTime
         $tmpIssue.EndTime = $ele.EndTime
         $tmpIssue.SendEndEmail = $ele.SendEndEmail
@@ -145,9 +145,8 @@ function Load-Issues()
     }
 
     return $existingIssues
-
-
 }
+
 function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
     $newLogEntriesInterator = $newLogEntries
@@ -186,7 +185,7 @@ function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLog
             $issue.SendStartEmail = $true
             $issue.SendEndEmail = $true
 
-            $newIssues.Add($Issue)
+            $newIssues.Add($issue)
         }
     }
 
@@ -201,7 +200,7 @@ function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLog
         $existingIssues | % { $resultIssues.Add( $_ )}
         $newIssues | % { $resultIssues.add($_)}
 
-        $resultMessages | ConvertTo-Json | Out-File "Issues.json"
+        $resultIssues | ConvertTo-Json | Out-File "Issues.json"
     }
     
 }
