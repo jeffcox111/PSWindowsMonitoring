@@ -1,4 +1,5 @@
 ﻿#load supporting classes and functions
+. .\Define-Classes.ps1
 . .\MonitoringChecks.ps1
 . .\SupportFunctions.ps1
 
