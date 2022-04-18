@@ -148,18 +148,9 @@ function Load-Issues()
 
 
 }
-function UpdateNewAndResolvedIssues()
+function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
-
-    $newLogEntries = New-Object Collections.Generic.List[LogEntry]
-    $newLogEntriesInterator = New-Object Collections.Generic.List[LogEntry]
     $newLogEntriesInterator = $newLogEntries
-    
-    $existingLogEntries = Load-LogEntries
-    if($existingLogEntries.Count -gt 0)
-    {
-        $existingLogEntries | ? {$_.IsHeartbeat = $false -and ($_.TimeStamp -gt (Get-Date).AddMinutes(-5)) } | % { $newLogEntries.add($_) }
-    }
     
     $existingIssues = New-Object Collections.Generic.List[Issue]    
     $existingIssues = Load-Issues
@@ -188,10 +179,10 @@ function UpdateNewAndResolvedIssues()
         $issue.Server = $nle.Server
         $issue.MonitoringType = $nle.MonitoringType
         $issue.ErrorMessage = $nle.ErrorMessage
-        $issue.StartTime = $nle.StartTime
+        $issue.StartTime = [DateTime]::Now
         $issue.EndTime = $null
-        $issue.SendStartEmail = $nle.SendStartEmail
-        $issue.SendEndEmail = $nle.SendEndEmail
+        $issue.SendStartEmail = $true
+        $issue.SendEndEmail = $true
 
         $newIssues.Add($Issue)
     }

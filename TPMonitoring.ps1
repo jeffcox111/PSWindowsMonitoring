@@ -15,7 +15,7 @@ function Run-MonitoringChecks ($SendEmail = 0)
     #Run monitoring checks...
     Check-ServerIsOnline google.com | % { Append-ErrorList $_ $messages }
     Check-ServerIsOnline downdetector.com | % { Append-ErrorList $_ $messages }
-    Check-Freespace localhost C: 500 | % { Append-ErrorList $_ $messages }
+    Check-Freespace localhost C: 50 | % { Append-ErrorList $_ $messages }
     
     
     #add heartbeat entry if there were no issues detected
@@ -44,7 +44,7 @@ function Run-MonitoringChecks ($SendEmail = 0)
     
     
     #TODO: replicate old SQL logic for Adding new Issues and Resolving existing issues
-    UpdateNewAndResolvedIssues
+    UpdateNewAndResolvedIssues $messages
 
     #email error messaging
     if($SendEmail -gt 0)

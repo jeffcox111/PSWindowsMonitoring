@@ -13,7 +13,7 @@ public class Issue{
     public string Server;
     public string MonitoringType;
     public string ErrorMessage;
-    public System.DateTime StartTime;
+    public System.DateTime? StartTime;
     public System.DateTime? EndTime;
     public bool SendStartEmail;
     public bool SendEndEmail;
