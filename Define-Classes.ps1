@@ -24,8 +24,6 @@ Add-Type -Language CSharp @"
 public class Settings{
     public int UpdateIntervalMinutes = 5;
     public string SystemName = "Jarvis";
-    public string SMTPServerAddress;
-    public string NotificationEmailAddress
-    public bool EmailNotificationsEnabled;    
+    public string WebhookURL;
 }
 "@;

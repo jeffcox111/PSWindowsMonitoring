@@ -1,18 +1,11 @@
-function Send-SummaryEmail ([Collections.Generic.List[LogEntry]]$errorMessageCollection)
+function Send-WebhookNotification([Collections.Generic.List[Issue]] $Issues, [string] $status)
 {
-    if($errorMessageCollection.count -gt 0)
-    {
-        
-        $SmtpClient = new-object system.net.mail.smtpClient
-        $MailMessage = New-Object system.net.mail.mailmessage
-        $SmtpClient.Host = ""
-        $mailmessage.from = ("")
-        $mailmessage.To.add("")
-        $mailmessage.Subject = “PowerShell Monitoring System Alert”
-        $body = $errorMessageCollection | % {$_.ErrorMessage + "`r`n"} 
-        $mailmessage.Body = $body
-        $smtpclient.Send($mailmessage)
+    $message = [PSCustomObject]@{
+        Status = $status
+        Issues = $Issues
     }
+    Invoke-WebRequest -Uri $settings.WebhookURL -Method Post -Body ($message | ConvertTo-Json)
+
 }
 
 function Append-ErrorList([LogEntry] $logentry, [Collections.Generic.List[LogEntry]]$errorMessageCollection)
@@ -111,10 +104,8 @@ function Load-Settings()
 
     $settings.UpdateIntervalMinutes = $settingsJson.UpdateIntervalMinutes
     $settings.SystemName = $settingsJson.SystemName
-    $settings.SMTPServerAddress = $settingsJson.SMTPServerAddress
-    $settings.EmailNotificationsEnabled = $settingsJson.EmailNotificationsEnabled
-    $settings.NotificationEmailAddress = $settingsJson.NotificationEmailAddress
-
+    $settings.WebhookURL = $settingsJson.WebhookURL
+    
     return $settings
 }
 function Load-LogEntries()
@@ -221,6 +212,8 @@ function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 
         $resultIssues | ConvertTo-Json | Out-File "Issues.json"
     }
+
+    if($newIssues.Count -gt 0) { Send-WebhookNotification $newIssues "New Issues" }
 }
 
 function Resolve-FixedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
@@ -228,6 +221,8 @@ function Resolve-FixedIssues([Collections.Generic.List[LogEntry]] $newLogEntries
     $existingIssues = New-Object Collections.Generic.List[Issue]    
     $existingIssues = Load-Issues
     
+    $resolvedIssues = New-Object Collections.Generic.List[Issue]    
+
     $count = 0
     foreach($ei in $existingIssues)
     {
@@ -245,12 +240,15 @@ function Resolve-FixedIssues([Collections.Generic.List[LogEntry]] $newLogEntries
             if($resolutionExists)
             {
                 $existingIssues[$count].EndTime = [DateTime]::Now
+                $resolvedIssues.Add($ei)
             }
         }
         $count++
     }
     
     $existingIssues | ConvertTo-Json | Out-File "Issues.json"
+
+    if($resolvedIssues.Count -gt 0) { Send-WebhookNotification $resolvedIssues "Resolved Issues" }
 }
 function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
