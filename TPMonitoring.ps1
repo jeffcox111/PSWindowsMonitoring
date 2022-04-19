@@ -55,6 +55,8 @@ function Run-MonitoringChecks ($SendEmail = 0)
 
 } 
 
+$settings = Load-Settings
+
 while($true)
 {
     Run-MonitoringChecks -SendEmail 0

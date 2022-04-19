@@ -103,6 +103,20 @@ function Get-LogonHistory{
     }
 }
 
+function Load-Settings()
+{
+    $settingsJson = Get-Content "settings.json" | Out-String | ConvertFrom-Json
+
+    $settings = New-Object Settings
+
+    $settings.UpdateIntervalMinutes = $settingsJson.UpdateIntervalMinutes
+    $settings.SystemName = $settingsJson.SystemName
+    $settings.SMTPServerAddress = $settingsJson.SMTPServerAddress
+    $settings.EmailNotificationsEnabled = $settingsJson.EmailNotificationsEnabled
+    $settings.NotificationEmailAddress = $settingsJson.NotificationEmailAddress
+
+    return $settings
+}
 function Load-LogEntries()
 {
     $existingEntriesJson = Get-Content 'LogEntries.json' | Out-String | ConvertFrom-Json
