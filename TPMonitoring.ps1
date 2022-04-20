@@ -55,10 +55,10 @@ $settings = Load-Settings
 while($true)
 {
     Run-MonitoringChecks -SendEmail 0
-
-    for($x = 0; $x -le 300; $x++)
+    $sleepSeconds = $settings.UpdateIntervalMinutes * 60
+    for($x = 0; $x -le $sleepSeconds; $x++)
     {
-        $percentComplete = ($x / 300) * 100
+        $percentComplete = ($x / $sleepSeconds) * 100
         Write-Progress -Activity "Time till next monitoring check run..." -Status "$percentComplete%" -PercentComplete $percentComplete
         Start-Sleep -Seconds 1
     }
