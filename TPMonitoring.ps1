@@ -6,18 +6,18 @@
 
 function Run-MonitoringChecks ($notifications = $true)
 {
+    #define container for all logged messages
     $messages = New-Object Collections.Generic.List[LogEntry]
 
-    #TODO: ADD ALL THE FUNCTION CALLS YOU WANT TO RUN HEAR
-    #THE FORMAT SHOULD ALWAYS BE LIKE THE LINE ABOVE.
-    #FOR EXAMPLE:
+    #Run monitoring checks...
+    #This is where you come in!  Add lines below this comment block to check on the things you want to monitor.
+    #The format should always be like the example below, including the pipe and everything after it:
     #Check-SOMETHING [thing to check [and parameters]] | % { Append-ErrorList $_ $messages }
     
-    #Run monitoring checks...
     Check-ServerIsOnline google.com | % { Append-ErrorList $_ $messages }
-    Check-ServerIsOnline downdetector.com | % { Append-ErrorList $_ $messages }
-    Check-Freespace localhost C: 50 | % { Append-ErrorList $_ $messages }
-    
+    Check-Freespace localhost C: 100 | % { Append-ErrorList $_ $messages }
+  
+    #process all logged messages
     Process-LogEntries $messages
 
 } 
