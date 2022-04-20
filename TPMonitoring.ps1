@@ -29,25 +29,11 @@ function Run-MonitoringChecks ($notifications = $true)
     }
     
     #log entries to json file
-    $resultMessages = New-Object Collections.Generic.List[LogEntry]
-    $oldMessages = Load-LogEntries
-    if($null -eq $oldMessages)
-    {
-        $messages | ConvertTo-Json | Out-File "LogEntries.json" 
-    }
-    else
-    {        
-        $oldmessages | % { $resultMessages.Add( $_ )}
-        $messages | % { $resultMessages.add($_)}
+    Write-LogEntries $messages
 
-        $resultMessages | ConvertTo-Json | Out-File "LogEntries.json"
-    }
-    
-    
     #TODO: replicate old SQL logic for Adding new Issues and Resolving existing issues
     UpdateNewAndResolvedIssues $messages
 
-    
 } 
 
 $settings = Load-Settings

@@ -150,6 +150,22 @@ function Load-Issues()
     return $existingIssues
 }
 
+function Write-LogEntries([Collections.Generic.List[LogEntry]] $messages)
+{
+    $resultMessages = New-Object Collections.Generic.List[LogEntry]
+    $oldMessages = Load-LogEntries
+    if($null -eq $oldMessages)
+    {
+        $messages | ConvertTo-Json | Out-File "LogEntries.json" 
+    }
+    else
+    {        
+        $oldmessages | % { $resultMessages.Add( $_ )}
+        $messages | % { $resultMessages.add($_)}
+
+        $resultMessages | ConvertTo-Json | Out-File "LogEntries.json"
+    }
+}
 function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
     $newLogEntriesInterator = New-Object Collections.Generic.List[LogEntry]
