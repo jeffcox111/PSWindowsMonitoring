@@ -280,3 +280,15 @@ function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLog
     Resolve-FixedIssues $newLogEntries
     
 }
+
+function Process-LogEntries([Collections.Generic.List[LogEntry]] $messages)
+{
+    #add heartbeat entry if there were no issues detected
+    $messages = Add-Heartbeat $messages
+        
+    #log entries to json file
+    Write-LogEntries $messages
+
+    #add new issues, resolve closed issues, send notifications
+    UpdateNewAndResolvedIssues $messages
+}
