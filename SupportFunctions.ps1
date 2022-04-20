@@ -150,6 +150,18 @@ function Load-Issues()
     return $existingIssues
 }
 
+function Add-Heartbeat([Collections.Generic.List[LogEntry]] $messages)
+{
+    if($messages.Count -eq 0)
+    {
+        $heartBeat = new-object LogEntry
+        $heartBeat.TimeStamp = [DateTime]::Now
+        $heartBeat.IsHeartbeat = 1
+
+        $messages.add($heartbeat)
+    }
+    return $messages
+}
 function Write-LogEntries([Collections.Generic.List[LogEntry]] $messages)
 {
     $resultMessages = New-Object Collections.Generic.List[LogEntry]

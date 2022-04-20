@@ -18,16 +18,9 @@ function Run-MonitoringChecks ($notifications = $true)
     Check-ServerIsOnline downdetector.com | % { Append-ErrorList $_ $messages }
     Check-Freespace localhost C: 50 | % { Append-ErrorList $_ $messages }
     
-    
     #add heartbeat entry if there were no issues detected
-    if($messages.Count -eq 0)
-    {
-        $heartBeat = new-object LogEntry
-        $heartBeat.TimeStamp = [DateTime]::Now
-        $heartBeat.IsHeartbeat = 1
-        $messages.Add($heartBeat)
-    }
-    
+    $messages = Add-Heartbeat $messages
+        
     #log entries to json file
     Write-LogEntries $messages
 
