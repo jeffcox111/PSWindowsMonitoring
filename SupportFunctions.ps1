@@ -143,9 +143,7 @@ function Load-Issues()
         $tmpIssue.MonitoringType = $ele.MonitoringType
         $tmpIssue.StartTime = $ele.StartTime
         $tmpIssue.EndTime = $ele.EndTime
-        $tmpIssue.SendEndEmail = $ele.SendEndEmail
-        $tmpIssue.SendStartEmail = $ele.SendStartEmail
-        
+                
         $existingIssues.Add($tmpIssue)
     }
 
@@ -191,8 +189,6 @@ function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
                 $issue.ErrorMessage = $nle.ErrorMessage
                 $issue.StartTime = [DateTime]::Now
                 $issue.EndTime = $null
-                $issue.SendStartEmail = $true
-                $issue.SendEndEmail = $true
 
                 $newIssues.Add($issue)
             }

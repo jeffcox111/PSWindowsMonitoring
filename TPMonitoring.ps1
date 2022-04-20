@@ -4,7 +4,7 @@
 . .\SupportFunctions.ps1
 
 
-function Run-MonitoringChecks ($SendEmail = 0)
+function Run-MonitoringChecks ($notifications = $true)
 {
     $messages = New-Object Collections.Generic.List[LogEntry]
 
@@ -47,12 +47,7 @@ function Run-MonitoringChecks ($SendEmail = 0)
     #TODO: replicate old SQL logic for Adding new Issues and Resolving existing issues
     UpdateNewAndResolvedIssues $messages
 
-    #email error messaging
-    if($SendEmail -gt 0)
-    {
-        Send-SummaryEmail($messages)
-    }
-
+    
 } 
 
 $settings = Load-Settings
