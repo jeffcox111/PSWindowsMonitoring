@@ -204,12 +204,12 @@ function Check-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$thr
 }
 
 
-function Check-ProcessNotRunningOnHost([string]$ProcessName, [bool]$KillIfRunning = $false)
+function Check-ProcessNotRunningOnHost([string]$ProcessName)
 {
     #TODO: code the dang logic
 }
 
-function Check-ProcessRunningThatShouldNotBeOnHost([string]$ProcessName)
+function Check-ProcessRunningThatShouldNotBeOnHost([string]$ProcessName, [bool]$KillIfRunning = $false)
 {
     #TODO: code the dang logic
 }
