@@ -128,7 +128,7 @@ function Check-WebsiteOnline([string]$url, [string]$friendlyName)
        $statusCode = $request.StatusCode
     }  
 
-    if(-Not($statusCode -eq 200 -or $statusCode -eq "Unauthorized"))
+    if(-Not($statusCode -eq 200 -or $statusCode -eq "Unauthorized" -or $statusCode -eq "NotFound"))
     {
        $logentry = new-object LogEntry
        $logentry.Server = $friendlyName
