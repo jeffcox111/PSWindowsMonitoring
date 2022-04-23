@@ -204,12 +204,54 @@ function Check-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$thr
 }
 
 
-function Check-ProcessNotRunningOnHost([string]$ProcessName)
+function Check-ProcessNotRunning([string]$ProcessName)
 {
     #TODO: code the dang logic
 }
 
-function Check-ProcessRunningThatShouldNotBeOnHost([string]$ProcessName, [bool]$KillIfRunning = $false)
+function Check-ProcessRunningThatShouldNotBe([string]$ProcessName, [bool]$KillIfRunning = $false)
 {
-    #TODO: code the dang logic
+    $process = Get-Process $ProcessName -ErrorAction SilentlyContinue
+    if ($process) 
+    {
+        $logentry = new-object LogEntry
+
+        if($KillIfRunning)
+        {
+            # try gracefully first
+            $notprocessepad.CloseMainWindow()
+            # kill after five seconds
+            Start-Sleep 5
+
+            if (!$process.HasExited) 
+            {
+                $process | Stop-Process -Force
+                
+                $logentry.Server = "localhost"
+                $logentry.TimeStamp = [DateTime]::Now
+                $logentry.MonitorType = "Check-ProcessRunningThatShouldNotBe"
+                $logentry.ErrorMessage = "The process $ProcessName was found running and forced stop is being attempted."
+            
+                write-host $logentry.ErrorMessage
+                return $logentry
+            }
+
+            $logentry.Server = "localhost"
+            $logentry.TimeStamp = [DateTime]::Now
+            $logentry.MonitorType = "Check-ProcessRunningThatShouldNotBe"
+            $logentry.ErrorMessage = "The process $ProcessName was found running and was stopped successfully."
+        
+            write-host $logentry.ErrorMessage
+            return $logentry
+        }
+
+        $logentry.Server = "localhost"
+        $logentry.TimeStamp = [DateTime]::Now
+        $logentry.MonitorType = "Check-ProcessRunningThatShouldNotBe"
+        $logentry.ErrorMessage = "The process $ProcessName was found running; no attempt made to stop."
+    
+        write-host $logentry.ErrorMessage
+        return $logentry
+    }
+    
 }
