@@ -105,6 +105,12 @@ function Load-Settings()
     $settings.UpdateIntervalMinutes = $settingsJson.UpdateIntervalMinutes
     $settings.SystemName = $settingsJson.SystemName
     $settings.WebhookURL = $settingsJson.WebhookURL
+    $settings.NotifyViaWebhook = $settingsJson.NotifyViaWebhook
+    $settings.NotifyViaSMTP = $settingsJson.NotifyViaSMTP
+    $settings.SMTPServer = $settingsJson.SMTPServer
+    $settings.SMTPUserAccount = $settingsJson.SMTPUserAccount
+    $settings.SMTPPassword = $settingsJson.SMTPPassword
+    $settings.SMTPNotificationEmailAddress = $settingsJson.SMTPNotificationEmailAddress
     
     return $settings
 }

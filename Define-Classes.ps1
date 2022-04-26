@@ -23,5 +23,11 @@ public class Settings{
     public int UpdateIntervalMinutes = 5;
     public string SystemName = "Jarvis";
     public string WebhookURL;
+    public bool NotifyViaWebhook;
+    public bool NotifyViaSMTP; 
+    public string SMTPServer;
+    public string SMTPUserAccount;
+    public string SMTPPassword;
+    public string SMTPNotificationEmailAddress;
 }
 "@;
