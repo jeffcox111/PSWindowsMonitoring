@@ -19,6 +19,10 @@ function Check-SQLBlocking([string]$serverName)
        $logentry.ErrorMessage = "There is SQL blocking taking place in " + $serverName + "."
        
        write-host $logentry.ErrorMessage
+       if($null -ne $messages)
+       {
+            Append-ErrorList $logentry $messages
+       }
        return $logentry       
     }    
 }
@@ -44,6 +48,10 @@ function Check-ServerIsOnline([string]$serverName, [string]$friendlyHostName = "
         $logentry.ErrorMessage = "Cannot connect to $friendlyHostName."
 
         write-host $logentry.ErrorMessage
+        if($null -ne $messages)
+        {
+            Append-ErrorList $logentry $messages
+        }
         return $logentry
     }     
 }
@@ -63,6 +71,10 @@ function Check-MonitoringHostRebooted()
       $logentry.ErrorMessage = "The host of this monitoring script ($env:computername) has successfully rebooted."
       
       write-host $logentry.ErrorMessage
+      if($null -ne $messages)
+      {
+          Append-ErrorList $logentry $messages
+      }
       return $logentry
    }
    
@@ -87,6 +99,10 @@ function Check-Freespace([string] $serverName,[string] $drive, [int]$thresholdGi
           {
               $logentry.ErrorMessage = "Drive $drive on $serverName is out of space."
               write-host $logentry.ErrorMessage
+              if($null -ne $messages)
+              {
+                  Append-ErrorList $logentry $messages
+              }
               return $logentry
               
           }
@@ -95,6 +111,10 @@ function Check-Freespace([string] $serverName,[string] $drive, [int]$thresholdGi
               $mb = "{0:N2}" -f ($freespace * 1024)
               $logentry.ErrorMessage = "Drive $drive on $serverName is below $thresholdGigs gig of free space. There are $mb MB remaining."
               write-host $logentry.ErrorMessage
+              if($null -ne $messages)
+              {
+                  Append-ErrorList $logentry $messages
+              }    
               return $logentry            
           }
         }
@@ -107,6 +127,10 @@ function Check-Freespace([string] $serverName,[string] $drive, [int]$thresholdGi
             $logentry.ErrorMessage = "Can't currently perform WMI queries against $serverName."
             
             write-host $logentry.ErrorMessage
+            if($null -ne $messages)
+            {
+                Append-ErrorList $logentry $messages
+            }
             return $logentry
         }
     }
@@ -137,6 +161,10 @@ function Check-WebsiteOnline([string]$url, [string]$friendlyName)
        $logentry.ErrorMessage = "$friendlyName is offline or unreachable."
 
        write-host $logentry.ErrorMessage
+       if($null -ne $messages)
+       {
+           Append-ErrorList $logentry $messages
+       } 
        return $logentry
     }
 }
@@ -162,6 +190,10 @@ function Check-DBEmailFailures([string] $server)
        $logentry.ErrorMessage = "$count email(s) failed being sent from $server."
 
        write-host $logentry.ErrorMessage
+       if($null -ne $messages)
+       {
+           Append-ErrorList $logentry $messages
+       }
        return $logentry
     }
 }
@@ -183,6 +215,10 @@ function Check-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$thr
           $logentry.ErrorMessage = "The partition $partition on server $server does not exist."
       
           write-host $logentry.ErrorMessage
+          if($null -ne $messages)
+          {
+              Append-ErrorList $logentry $messages
+          }
           return $logentry
         }
 
@@ -198,6 +234,10 @@ function Check-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$thr
           $logentry.ErrorMessage = "On the server $server, the partition $partition is at $usedSpacePercent % capacity and should be below $threshholdPercentage %."
       
           write-host $logentry.ErrorMessage
+          if($null -ne $messages)
+          {
+              Append-ErrorList $logentry $messages
+          }
           return $logentry
         }
     }
@@ -233,6 +273,10 @@ function Check-ProcessRunningThatShouldNotBe([string]$ProcessName, [bool]$KillIf
                 $logentry.ErrorMessage = "The process $ProcessName was found running and forced stop is being attempted."
             
                 write-host $logentry.ErrorMessage
+                if($null -ne $messages)
+                {
+                    Append-ErrorList $logentry $messages
+                }
                 return $logentry
             }
 
@@ -242,6 +286,10 @@ function Check-ProcessRunningThatShouldNotBe([string]$ProcessName, [bool]$KillIf
             $logentry.ErrorMessage = "The process $ProcessName was found running and was stopped successfully."
         
             write-host $logentry.ErrorMessage
+            if($null -ne $messages)
+            {
+                Append-ErrorList $logentry $messages
+            }
             return $logentry
         }
 
@@ -251,6 +299,10 @@ function Check-ProcessRunningThatShouldNotBe([string]$ProcessName, [bool]$KillIf
         $logentry.ErrorMessage = "The process $ProcessName was found running; no attempt made to stop."
     
         write-host $logentry.ErrorMessage
+        if($null -ne $messages)
+        {
+            Append-ErrorList $logentry $messages
+        }
         return $logentry
     }
     

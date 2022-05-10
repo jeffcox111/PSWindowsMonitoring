@@ -1,3 +1,19 @@
+
+function Run-MonitoringProcess()
+{
+    while($true)
+{
+    Run-MonitoringChecks -SendEmail 0
+    $sleepSeconds = $settings.UpdateIntervalMinutes * 60
+    for($x = 0; $x -le $sleepSeconds; $x++)
+    {
+        $percentComplete = ($x / $sleepSeconds) * 100
+        Write-Progress -Activity "Time till next monitoring check run..." -Status "$percentComplete%" -PercentComplete $percentComplete
+        Start-Sleep -Seconds 1
+    }
+}
+}
+
 function Send-WebhookNotification([Collections.Generic.List[Issue]] $Issues, [string] $status)
 {
     $message = [PSCustomObject]@{
