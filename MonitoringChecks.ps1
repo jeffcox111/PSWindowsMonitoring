@@ -251,6 +251,7 @@ function Check-ProcessNotRunning([string]$ProcessName)
 
 function Check-ProcessRunningThatShouldNotBe([string]$ProcessName, [bool]$KillIfRunning = $false)
 {
+    write-host "Checking to see of process $ProcessName is running ..."
     $process = Get-Process $ProcessName -ErrorAction SilentlyContinue
     if ($process) 
     {
@@ -259,7 +260,7 @@ function Check-ProcessRunningThatShouldNotBe([string]$ProcessName, [bool]$KillIf
         if($KillIfRunning)
         {
             # try gracefully first
-            $notprocessepad.CloseMainWindow()
+            $process.CloseMainWindow()
             # kill after five seconds
             Start-Sleep 5
 
