@@ -205,7 +205,7 @@ function Monitor-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$t
         write-host "Checking free drive space on server: $server, file system: $partition..."
         $x = . 'c:\program files\git\usr\bin\ssh.exe' $server -l tproot -i privatekey.ppk "df | grep $partition | awk '{print `$4}'"
 
-        if($x -eq $null)
+        if($null -eq $x)
         {
      
           $logentry = new-object LogEntry
