@@ -88,6 +88,7 @@ function Import-Settings()
     $settings.SMTPUserAccount = $settingsJson.SMTPUserAccount
     $settings.SMTPPassword = $settingsJson.SMTPPassword
     $settings.SMTPNotificationEmailAddress = $settingsJson.SMTPNotificationEmailAddress
+    $settings.LogEntryRetentionDays = $settingsJson.LogEntryRetentionDays
     
     return $settings
 }
@@ -157,6 +158,8 @@ function Write-LogEntries([Collections.Generic.List[LogEntry]] $messages)
     {        
         $oldmessages | % { $resultMessages.Add( $_ )}
         $messages | % { $resultMessages.add($_)}
+        
+        $resultMessages = $resultMessages | ? { $_.TimeStamp -gt (Get-date).AddDays(-$settings.LogEntryRetentionDays)  }
 
         $resultMessages | ConvertTo-Json | Out-File "LogEntries.json"
     }

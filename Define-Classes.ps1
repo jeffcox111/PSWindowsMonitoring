@@ -29,5 +29,6 @@ public class Settings{
     public string SMTPUserAccount;
     public string SMTPPassword;
     public string SMTPNotificationEmailAddress;
+    public int LogEntryRetentionDays = 30;
 }
 "@;
