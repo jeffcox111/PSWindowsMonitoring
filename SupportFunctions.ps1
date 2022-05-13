@@ -1,10 +1,10 @@
 
-function Run-MonitoringProcess()
+function Invoke-MonitoringProcess()
 {
     while($true)
     {
         $messages = New-Object Collections.Generic.List[LogEntry]
-        Run-MonitoringChecks -SendEmail 0
+        Invoke-MonitoringChecks -SendEmail 0
         Process-LogEntries $messages
         $sleepSeconds = $settings.UpdateIntervalMinutes * 60
         for($x = 0; $x -le $sleepSeconds; $x++)
@@ -26,54 +26,13 @@ function Send-WebhookNotification([Collections.Generic.List[Issue]] $Issues, [st
 
 }
 
-function Append-ErrorList([LogEntry] $logentry, [Collections.Generic.List[LogEntry]]$errorMessageCollection)
+function Add-ErrorList([LogEntry] $logentry, [Collections.Generic.List[LogEntry]]$errorMessageCollection)
 {
     if(-Not([string]::IsNullOrEmpty($logentry.ErrorMessage)))
     {
         $errorMessageCollection.Add($logentry)
     }
 }
-
-function Update-Database([LogEntry]$entry)
-{
-    $sqlConn = New-Object System.Data.SqlClient.SqlConnection
-    $sqlConn.ConnectionString = "Data Source=;Initial Catalog=Monitoring;Persist Security Info=True;User ID=;Password="
-    $sqlConn.Open()
-
-    $sql = "INSERT INTO LogEntries (TimeStamp, Server, MonitoringType, ErrorMessage, IsHeartbeat) VALUES ('" + $entry.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss:fff") + "', '" + $entry.Server + "', '" + $entry.MonitorType + "', '" + $entry.ErrorMessage + "', '" + $entry.IsHeartbeat + "')"
-    $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$sqlConn)
-    $rdr = $cmd.ExecuteNonQuery()
-    
-    $sqlconn.Close()
-    
-}
-
-function Check-DBOnline([string]$Server)
-{
-    $logentry = new-object LogEntry
-    $logentry = Check-ServerIsOnline $Server
-
-    if($logentry -eq $null)
-    {
-        Set-Content dbstatus.txt 1
-    }
-    else
-    {
-        $status = Get-Content dbstatus.txt
-        if($status -eq 1)
-        {
-            $errorMessageCollection = new-object Collections.Generic.List[LogEntry]
-            $errorMessageCollection.Add($logentry)
-            Send-SummaryEmail $errorMessageCollection 
-            Set-Content dbstatus.txt 0
-        }
-    }
-}
-
-function Get-UpTime(){
-    Get-WmiObject win32_operatingsystem | select csname, @{LABEL='LastBootUpTime';EXPRESSION={$_.ConverttoDateTime($_.lastbootuptime)}}
-}   
-
 
 function Get-LogonHistory{
     Param (
@@ -114,7 +73,7 @@ function Get-LogonHistory{
     }
 }
 
-function Load-Settings()
+function Import-Settings()
 {
     $settingsJson = Get-Content "settings.json" | Out-String | ConvertFrom-Json
 
@@ -132,7 +91,7 @@ function Load-Settings()
     
     return $settings
 }
-function Load-LogEntries()
+function Import-LogEntries()
 {
     $existingEntriesJson = Get-Content 'LogEntries.json' | Out-String | ConvertFrom-Json
 
@@ -153,7 +112,7 @@ function Load-LogEntries()
     return $existingLogEntries
 }
 
-function Load-Issues()
+function Import-Issues()
 {
     $existingIssuesJson = Get-Content 'Issues.json' | Out-String | ConvertFrom-Json
 
@@ -189,7 +148,7 @@ function Add-Heartbeat([Collections.Generic.List[LogEntry]] $messages)
 function Write-LogEntries([Collections.Generic.List[LogEntry]] $messages)
 {
     $resultMessages = New-Object Collections.Generic.List[LogEntry]
-    $oldMessages = Load-LogEntries
+    $oldMessages = Import-LogEntries
     if($null -eq $oldMessages)
     {
         $messages | ConvertTo-Json | Out-File "LogEntries.json" 
@@ -208,7 +167,7 @@ function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
     $newLogEntriesInterator = $newLogEntries.PSObject.Copy()
     
     $existingIssues = New-Object Collections.Generic.List[Issue]    
-    $existingIssues = Load-Issues
+    $existingIssues = Import-Issues
     
     $openIssues = New-Object Collections.Generic.List[Issue]  
     $openIssues = $existingIssues | ? { $null -eq $_.EndTime }
@@ -267,7 +226,7 @@ function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 function Resolve-FixedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
     $existingIssues = New-Object Collections.Generic.List[Issue]    
-    $existingIssues = Load-Issues
+    $existingIssues = Import-Issues
     
     $resolvedIssues = New-Object Collections.Generic.List[Issue]    
 

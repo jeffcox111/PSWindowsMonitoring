@@ -12,7 +12,7 @@ public class Settings{
 }
 "@;
 
-function Load-Settings()
+function Import-Settings()
 {
     $settingsJson = Get-Content "settings.json" | Out-String | ConvertFrom-Json
 
@@ -31,7 +31,7 @@ function Load-Settings()
     return $settings
 }
 
-$settings = Load-Settings
+$settings = Import-Settings
 
 $Body = "Sample Email Body"  
 $SmtpServer = $settings.SMTPServer

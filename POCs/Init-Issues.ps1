@@ -15,7 +15,7 @@ $issues = New-Object Collections.Generic.List[Issue]
 
 $issue1 = New-Object Issue
 $issue1.Server = "localhost"
-$issue1.MonitoringType = "Check-IsOnline"
+$issue1.MonitoringType = "Monitor-IsOnline"
 $issue1.ErrorMessage = "Server is offline"
 $issue1.StartTime = Get-Date
 $issue1.EndTime = $null
@@ -24,7 +24,7 @@ $issue1.SendEndEmail = $true
 
 $issue2 = New-Object Issue
 $issue2.Server = "localhost"
-$issue2.MonitoringType = "Check-IsOnline"
+$issue2.MonitoringType = "Monitor-IsOnline"
 $issue2.ErrorMessage = "Server is offline"
 $issue2.StartTime = Get-Date
 $issue2.EndTime = $null
