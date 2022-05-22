@@ -26,6 +26,49 @@ function Send-WebhookNotification([Collections.Generic.List[Issue]] $Issues, [st
 
 }
 
+function Send-EmailNotification([Collections.Generic.List[Issue]] $Issues, [string] $status)
+{    
+    $SmtpServer = $settings.SMTPServer
+    $SmtpUser = $settings.SMTPUserAccount  
+    $smtpPassword = $settings.SMTPPassword  
+    $MailtTo = $settings.SMTPNotificationEmailAddress  
+    $MailFrom = $settings.SMTPUserAccount  
+    $MailSubject = $settings.SystemName + " - $status"  
+    $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $SmtpUser, $($smtpPassword | ConvertTo-SecureString -AsPlainText -Force)  
+    $bgColor = ""
+    
+    if($status.Contains("New")) 
+    { 
+        $bgColor = "#e86363"
+    }
+    else
+    {
+        $bgColor = "#8FDB20"
+    }
+
+    $MessageHeader = "System Issue(s) Status<br><br>"
+    $MessageFooter = ""
+    $TableTail = "</table></body></html>"
+    $TableHead = @"
+    <html><head><style>
+        td {border: solid black 1px;padding-left:5px;padding-right:5px;padding-top:1px;padding-bottom:1px;font-size:11pt;} 
+    </style>
+    </head>
+    <body><table cellpadding=0 cellspacing=0 border=0>
+    <tr bgcolor=$bgColor><td align=center><b>Error Messages</b></td></tr>
+"@
+    $rows = ""
+    foreach($item in $Issues)    
+    {
+        $rows = $rows + "<tr>" + $item.ErrorMessage + "</tr>"
+    }
+
+    $Body = $MessageHeader + $TableHead + $rows + $TableTail + $MessageFooter  
+    
+    Send-MailMessage -To "$MailtTo" -from "$MailFrom" -Subject $MailSubject -Body "$Body" -SmtpServer $SmtpServer -Port 587 -BodyAsHtml -UseSsl -Credential $Credentials  
+
+}
+
 function Add-ErrorList([LogEntry] $logentry, [Collections.Generic.List[LogEntry]]$errorMessageCollection)
 {
     if(-Not([string]::IsNullOrEmpty($logentry.ErrorMessage)))
@@ -160,7 +203,7 @@ function Write-LogEntries([Collections.Generic.List[LogEntry]] $messages)
         $messages | % { $resultMessages.add($_)}
         
         $resultMessages = $resultMessages | ? { $_.TimeStamp -gt (Get-date).AddDays(-$settings.LogEntryRetentionDays)  }
-
+        
         $resultMessages | ConvertTo-Json | Out-File "LogEntries.json"
     }
 }
@@ -223,7 +266,11 @@ function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
         $resultIssues | ConvertTo-Json | Out-File "Issues.json"
     }
 
-    if($newIssues.Count -gt 0) { Send-WebhookNotification $newIssues "New Issues" }
+    if($newIssues.Count -gt 0) 
+    { 
+       if($settings.NotifyViaWebhook) { Send-WebhookNotification $newIssues "New Issues" }
+       if($settings.NotifyViaSMTP) {Send-EmailNotification $newIssues "New Issues" }
+    }
 }
 
 function Resolve-FixedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
@@ -258,7 +305,11 @@ function Resolve-FixedIssues([Collections.Generic.List[LogEntry]] $newLogEntries
     
     $existingIssues | ConvertTo-Json | Out-File "Issues.json"
 
-    if($resolvedIssues.Count -gt 0) { Send-WebhookNotification $resolvedIssues "Resolved Issues" }
+    if($resolvedIssues.Count -gt 0) 
+    { 
+       if($settings.NotifyViaWebhook) { Send-WebhookNotification $newIssues "Resolved Issues" }
+       if($settings.NotifyViaSMTP) {Send-EmailNotification $resolvedIssues "Resolved Issues" }
+    }
 }
 function UpdateNewAndResolvedIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
 {
