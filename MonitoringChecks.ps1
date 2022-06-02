@@ -84,7 +84,7 @@ function Monitor-Freespace([string] $serverName,[string] $drive, [int]$threshold
 {
     if (Test-Connection $serverName -Count 1 -ErrorAction SilentlyContinue)
     {
-        if((Get-WmiObject Win32_LogicalDisk -ComputerName $serverName -Filter "DeviceID='$drive'") -ne $null)
+        if($null -ne (Get-WmiObject Win32_LogicalDisk -ComputerName $serverName -Filter "DeviceID='$drive'"))
         {
           $freespace = (Get-WmiObject Win32_LogicalDisk -ComputerName $serverName -Filter "DeviceID='$drive'" | Select-Object FreeSpace).FreeSpace / 1024 / 1024 / 1024
           $Display = "Checking free space on $serverName $drive ..."

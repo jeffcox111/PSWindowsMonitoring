@@ -112,7 +112,7 @@ function Get-LogonHistory{
             }
         }
          
-        $Result | Select User, Time | Sort Time #| Out-GridView
+        $Result | Select-Object User, Time | Sort-Object Time #| Out-GridView
     }
 }
 
@@ -199,8 +199,8 @@ function Write-LogEntries([Collections.Generic.List[LogEntry]] $messages)
     }
     else
     {        
-        $oldmessages | % { $resultMessages.Add( $_ )}
-        $messages | % { $resultMessages.add($_)}
+        $oldmessages | ForEach-Object { $resultMessages.Add( $_ )}
+        $messages | ForEach-Object { $resultMessages.add($_)}
         
         $resultMessages = $resultMessages | ? { $_.TimeStamp -gt (Get-date).AddDays(-$settings.LogEntryRetentionDays)  }
         
@@ -216,7 +216,7 @@ function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
     $existingIssues = Import-Issues
     
     $openIssues = New-Object Collections.Generic.List[Issue]  
-    $openIssues = $existingIssues | ? { $null -eq $_.EndTime }
+    $openIssues = $existingIssues | Where-Object { $null -eq $_.EndTime }
 
     $newIssues = New-Object Collections.Generic.List[Issue]  
 
@@ -260,8 +260,8 @@ function Add-NewIssues([Collections.Generic.List[LogEntry]] $newLogEntries)
     {        
         $resultIssues = New-Object Collections.Generic.List[Issue]
 
-        $existingIssues | % { $resultIssues.Add( $_ )}
-        $newIssues | % { $resultIssues.add($_)}
+        $existingIssues | ForEach-Object { $resultIssues.Add( $_ )}
+        $newIssues | ForEach-Object { $resultIssues.add($_)}
 
         $resultIssues | ConvertTo-Json | Out-File "Issues.json"
     }

@@ -6,4 +6,5 @@ function Invoke-MonitoringChecks ($notifications = $true)
     Monitor-ServerIsOnline google.com 
     Monitor-Freespace localhost C: 100 
     Monitor-ProcessRunningThatShouldNotBe notepad $true
+        
 } 
