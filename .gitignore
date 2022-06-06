@@ -1,0 +1,7 @@
+#ignore testing json data
+mydata.json
+LogEntries.json
+Issues.json
+
+#ignore settings file 
+settings.json

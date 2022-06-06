@@ -1,15 +1,4 @@
-Add-Type -Language CSharp @"
-public class LogEntry{
-    public System.DateTime TimeStamp;
-    public string Server;
-    public string MonitorType;
-    public string ErrorMessage;
-    public bool IsHeartbeat;
-}
-"@;
-
-
-function Check-SQLBlocking([string]$serverName)
+function Monitor-SQLBlocking([string]$serverName)
 {
     write-host "Looking for blocking in DB $serverName ..."
     $sqlconn = New-Object System.Data.SqlClient.SqlConnection
@@ -26,15 +15,19 @@ function Check-SQLBlocking([string]$serverName)
        $logentry = new-object LogEntry
        $logentry.Server = $serverName
        $logentry.TimeStamp = [DateTime]::Now
-       $logentry.MonitorType = "Check-SQLBlocking"
+       $logentry.MonitorType = "Monitor-SQLBlocking"
        $logentry.ErrorMessage = "There is SQL blocking taking place in " + $serverName + "."
        
        write-host $logentry.ErrorMessage
+       if($null -ne $messages)
+       {
+            Add-ErrorList $logentry $messages
+       }
        return $logentry       
     }    
 }
 
-function Check-ServerIsOnline([string]$serverName, [string]$friendlyHostName = "")
+function Monitor-ServerIsOnline([string]$serverName, [string]$friendlyHostName = "", [int32]$NumberOfAttempts = 1)
 {
     if($friendlyHostName -eq "")
     {
@@ -46,20 +39,24 @@ function Check-ServerIsOnline([string]$serverName, [string]$friendlyHostName = "
     }
 
     write-host "Testing connectivity with $friendlyHostName..."
-    if (-Not (Test-Connection $serverName -Count 2 -ErrorAction SilentlyContinue))
+    if (-Not (Test-Connection $serverName -Count $NumberOfAttempts -ErrorAction SilentlyContinue))
     {
         $logentry = new-object LogEntry
         $logentry.Server = $friendlyHostName
         $logentry.TimeStamp = [DateTime]::Now
-        $logentry.MonitorType = "Check-ServerIsOnline"
+        $logentry.MonitorType = "Monitor-ServerIsOnline"
         $logentry.ErrorMessage = "Cannot connect to $friendlyHostName."
 
         write-host $logentry.ErrorMessage
+        if($null -ne $messages)
+        {
+            Add-ErrorList $logentry $messages
+        }
         return $logentry
     }     
 }
 
-function Check-MonitoringHostRebooted()
+function Monitor-MonitoringHostRebooted()
 {
    $os = Get-WmiObject win32_operatingsystem
    $uptime = (Get-Date) - ($os.ConvertToDateTime($os.lastbootuptime))
@@ -70,20 +67,24 @@ function Check-MonitoringHostRebooted()
       $logentry = new-object LogEntry
       $logentry.Server = $env:computername
       $logentry.TimeStamp = [DateTime]::Now
-      $logentry.MonitorType = "Check-MonitoringHostRebooted"
+      $logentry.MonitorType = "Monitor-MonitoringHostRebooted"
       $logentry.ErrorMessage = "The host of this monitoring script ($env:computername) has successfully rebooted."
       
       write-host $logentry.ErrorMessage
+      if($null -ne $messages)
+      {
+          Add-ErrorList $logentry $messages
+      }
       return $logentry
    }
    
 }
 
-function Check-Freespace([string] $serverName,[string] $drive, [int]$thresholdGigs)
+function Monitor-Freespace([string] $serverName,[string] $drive, [int]$thresholdGigs)
 {
     if (Test-Connection $serverName -Count 1 -ErrorAction SilentlyContinue)
     {
-        if((Get-WmiObject Win32_LogicalDisk -ComputerName $serverName -Filter "DeviceID='$drive'") -ne $null)
+        if($null -ne (Get-WmiObject Win32_LogicalDisk -ComputerName $serverName -Filter "DeviceID='$drive'"))
         {
           $freespace = (Get-WmiObject Win32_LogicalDisk -ComputerName $serverName -Filter "DeviceID='$drive'" | Select-Object FreeSpace).FreeSpace / 1024 / 1024 / 1024
           $Display = "Checking free space on $serverName $drive ..."
@@ -92,12 +93,16 @@ function Check-Freespace([string] $serverName,[string] $drive, [int]$thresholdGi
           $logentry = new-object LogEntry
           $logentry.Server = $serverName
           $logentry.TimeStamp = [DateTime]::Now
-          $logentry.MonitorType = "Check-Freespace"
+          $logentry.MonitorType = "Monitor-Freespace"
 
           if ($freespace -eq 0)
           {
               $logentry.ErrorMessage = "Drive $drive on $serverName is out of space."
               write-host $logentry.ErrorMessage
+              if($null -ne $messages)
+              {
+                  Add-ErrorList $logentry $messages
+              }
               return $logentry
               
           }
@@ -106,6 +111,10 @@ function Check-Freespace([string] $serverName,[string] $drive, [int]$thresholdGi
               $mb = "{0:N2}" -f ($freespace * 1024)
               $logentry.ErrorMessage = "Drive $drive on $serverName is below $thresholdGigs gig of free space. There are $mb MB remaining."
               write-host $logentry.ErrorMessage
+              if($null -ne $messages)
+              {
+                  Add-ErrorList $logentry $messages
+              }    
               return $logentry            
           }
         }
@@ -114,16 +123,20 @@ function Check-Freespace([string] $serverName,[string] $drive, [int]$thresholdGi
             $logentry = new-object LogEntry
             $logentry.Server = $serverName
             $logentry.TimeStamp = [DateTime]::Now
-            $logentry.MonitorType = "Check-Freespace"
+            $logentry.MonitorType = "Monitor-Freespace"
             $logentry.ErrorMessage = "Can't currently perform WMI queries against $serverName."
             
             write-host $logentry.ErrorMessage
+            if($null -ne $messages)
+            {
+                Add-ErrorList $logentry $messages
+            }
             return $logentry
         }
     }
 }
 
-function Check-WebsiteOnline([string]$url, [string]$friendlyName)
+function Monitor-WebsiteOnline([string]$url, [string]$friendlyName)
 {
     write-host "Checking website $friendlyName ..."
     $statusCode = ""
@@ -139,20 +152,24 @@ function Check-WebsiteOnline([string]$url, [string]$friendlyName)
        $statusCode = $request.StatusCode
     }  
 
-    if(-Not($statusCode -eq 200 -or $statusCode -eq "Unauthorized"))
+    if(-Not($statusCode -eq 200 -or $statusCode -eq "Unauthorized" -or $statusCode -eq "NotFound"))
     {
        $logentry = new-object LogEntry
        $logentry.Server = $friendlyName
        $logentry.TimeStamp = [DateTime]::Now
-       $logentry.MonitorType = "Check-WebsiteOnline"
+       $logentry.MonitorType = "Monitor-WebsiteOnline"
        $logentry.ErrorMessage = "$friendlyName is offline or unreachable."
 
        write-host $logentry.ErrorMessage
+       if($null -ne $messages)
+       {
+           Add-ErrorList $logentry $messages
+       } 
        return $logentry
     }
 }
 
-function Check-DBEmailFailures([string] $server)
+function Monitor-DBEmailFailures([string] $server)
 {
     write-host "Checking for failed emails on $server..."
     $sqlConn = New-Object System.Data.SqlClient.SqlConnection
@@ -169,31 +186,39 @@ function Check-DBEmailFailures([string] $server)
        $logentry = new-object LogEntry
        $logentry.Server = $server
        $logentry.TimeStamp = [DateTime]::Now
-       $logentry.MonitorType = "Check-DBEmailFailure"
+       $logentry.MonitorType = "Monitor-DBEmailFailure"
        $logentry.ErrorMessage = "$count email(s) failed being sent from $server."
 
        write-host $logentry.ErrorMessage
+       if($null -ne $messages)
+       {
+           Add-ErrorList $logentry $messages
+       }
        return $logentry
     }
 }
 
-function Check-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$thresholdPercentage)
+function Monitor-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$thresholdPercentage)
 {
     if (Test-Connection $server -Count 1 -ErrorAction SilentlyContinue)
     {
         write-host "Checking free drive space on server: $server, file system: $partition..."
         $x = . 'c:\program files\git\usr\bin\ssh.exe' $server -l tproot -i privatekey.ppk "df | grep $partition | awk '{print `$4}'"
 
-        if($x -eq $null)
+        if($null -eq $x)
         {
      
           $logentry = new-object LogEntry
           $logentry.Server = $server
           $logentry.TimeStamp = [DateTime]::Now
-          $logentry.MonitorType = "Check-UsedDiskSpaceLinux"
+          $logentry.MonitorType = "Monitor-UsedDiskSpaceLinux"
           $logentry.ErrorMessage = "The partition $partition on server $server does not exist."
       
           write-host $logentry.ErrorMessage
+          if($null -ne $messages)
+          {
+              Add-ErrorList $logentry $messages
+          }
           return $logentry
         }
 
@@ -205,55 +230,81 @@ function Check-UsedDiskSpaceLinux([string]$server, [string]$partition, [int]$thr
           $logentry = new-object LogEntry
           $logentry.Server = $server
           $logentry.TimeStamp = [DateTime]::Now
-          $logentry.MonitorType = "Check-UsedDiskSpaceLinux"
+          $logentry.MonitorType = "Monitor-UsedDiskSpaceLinux"
           $logentry.ErrorMessage = "On the server $server, the partition $partition is at $usedSpacePercent % capacity and should be below $threshholdPercentage %."
       
           write-host $logentry.ErrorMessage
+          if($null -ne $messages)
+          {
+              Add-ErrorList $logentry $messages
+          }
           return $logentry
         }
     }
 }
 
-function Get-LogonHistory{
-    Param (
-     [string]$Computer = 'localhost', #(Read-Host Remote computer name),
-     [int]$Days = 10
-     )
- 
-     $Result = @()
- 
-        $ELogs = Get-EventLog System -Source Microsoft-Windows-WinLogon -After (Get-Date).AddDays(-$Days) -ComputerName $Computer
- 
-     If ($ELogs)
-     { 
-        ForEach ($Log in $ELogs)
-        { 
-            If ($Log.InstanceId -eq 7001)
-            { 
-                $ET = "Logon"
-            }
-            ElseIf ($Log.InstanceId -eq 7002)
-            { 
-                $ET = "Logoff"
-            }
 
-            Else
-            { 
-                Continue
-            }
-   
-            $Result += New-Object PSObject -Property @{
-                Time = $Log.TimeWritten
-                'Event Type' = $ET
-                User = (New-Object System.Security.Principal.SecurityIdentifier $Log.ReplacementStrings[1]).Translate([System.Security.Principal.NTAccount])
-            }
-        }
-         
-        $Result | Select User, Time | Sort Time #| Out-GridView
-    }
+function Monitor-ProcessNotRunning([string]$ProcessName)
+{
+    #TODO: code the dang logic
 }
 
-function Get-UpTime(){
-    Get-WmiObject win32_operatingsystem | select csname, @{LABEL='LastBootUpTime';EXPRESSION={$_.ConverttoDateTime($_.lastbootuptime)}}
-}   
+function Monitor-ProcessRunningThatShouldNotBe([string]$ProcessName, [bool]$KillIfRunning = $false)
+{
+    write-host "Checking to see of process $ProcessName is running ..."
+    $process = Get-Process $ProcessName -ErrorAction SilentlyContinue
+    if ($process) 
+    {
+        $logentry = new-object LogEntry
 
+        if($KillIfRunning)
+        {
+            # try gracefully first
+            $process.CloseMainWindow()
+            # kill after five seconds
+            Start-Sleep 5
+
+            if (!$process.HasExited) 
+            {
+                $process | Stop-Process -Force
+                
+                $logentry.Server = "localhost"
+                $logentry.TimeStamp = [DateTime]::Now
+                $logentry.MonitorType = "Monitor-ProcessRunningThatShouldNotBe"
+                $logentry.ErrorMessage = "The process $ProcessName was found running and forced stop is being attempted."
+            
+                write-host $logentry.ErrorMessage
+                if($null -ne $messages)
+                {
+                    Add-ErrorList $logentry $messages
+                }
+                return $logentry
+            }
+
+            $logentry.Server = "localhost"
+            $logentry.TimeStamp = [DateTime]::Now
+            $logentry.MonitorType = "Monitor-ProcessRunningThatShouldNotBe"
+            $logentry.ErrorMessage = "The process $ProcessName was found running and was stopped successfully."
+        
+            write-host $logentry.ErrorMessage
+            if($null -ne $messages)
+            {
+                Add-ErrorList $logentry $messages
+            }
+            return $logentry
+        }
+
+        $logentry.Server = "localhost"
+        $logentry.TimeStamp = [DateTime]::Now
+        $logentry.MonitorType = "Monitor-ProcessRunningThatShouldNotBe"
+        $logentry.ErrorMessage = "The process $ProcessName was found running; no attempt made to stop."
+    
+        write-host $logentry.ErrorMessage
+        if($null -ne $messages)
+        {
+            Add-ErrorList $logentry $messages
+        }
+        return $logentry
+    }
+    
+}
