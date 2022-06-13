@@ -1,34 +1,31 @@
-Add-Type -Language CSharp @"
-public class LogEntry{
-    public System.DateTime? TimeStamp;
-    public string Server;
-    public string MonitorType;
-    public string ErrorMessage;
-    public bool IsHeartbeat;
+class LogEntry
+{
+    [string]$Server = ""
+    [string]$MonitorType = ""
+    [string]$ErrorMessage = ""
+    [bool]$IsHeartBeat
+    [System.DateTime]$TimeStamp
 }
-"@;
 
-Add-Type -Language CSharp @"
-public class Issue{
-    public string Server;
-    public string MonitoringType;
-    public string ErrorMessage;
-    public System.DateTime? StartTime;
-    public System.DateTime? EndTime;
+class Issue
+{
+    [string]$Server = ""
+    [string]$MonitoringType = ""
+    [string]$ErrorMessage = ""
+    [nullable[System.DateTime]]$StartTime
+    [nullable[System.DateTime]]$EndTime
 }
-"@;
 
-Add-Type -Language CSharp @"
-public class Settings{
-    public int UpdateIntervalMinutes = 5;
-    public string SystemName = "Jarvis";
-    public string WebhookURL;
-    public bool NotifyViaWebhook;
-    public bool NotifyViaSMTP; 
-    public string SMTPServer;
-    public string SMTPUserAccount;
-    public string SMTPPassword;
-    public string SMTPNotificationEmailAddress;
-    public int LogEntryRetentionDays = 30;
+class Settings
+{
+    [int]$UpdateIntervalMinutes = 5
+    [string]$SystemName = "Jarvis"
+    [string]$WebhookURL = ""
+    [bool]$NotifyViaWebhook
+    [bool]$NotifyviaSMTP
+    [string]$SMTPServer = ""
+    [string]$SMTPUserAccount = ""
+    [string]$SMTPPassword = ""
+    [string]$SMTPNotificationEmailAddress = ""
+    [int]$LogEntryRetentionDays = 30;
 }
-"@;
