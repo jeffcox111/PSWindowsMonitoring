@@ -1,0 +1,5 @@
+psutil
+requests
+pyodbc
+paramiko
+pywin32
